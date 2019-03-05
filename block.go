@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"log"
+	"encoding/gob"
 )
 
 type Block struct {
@@ -41,8 +42,6 @@ func (block *Block)SetHash()  {
 		Uint64ToByte(block.TimeStamp),
 		Uint64ToByte(block.Difficulty),
 		Uint64ToByte(block.Nonce),
-		block.PrevHash,
-		block.Hash,
 		block.Data,
 	}
 
@@ -64,6 +63,31 @@ func Uint64ToByte(num uint64) []byte {
 	}
 
 	return buffer.Bytes()
+}
+
+func (block *Block)Serialize() []byte  {
+
+	var buffer bytes.Buffer
+
+	encoder := gob.NewEncoder(&buffer)
+	err := encoder.Encode(&block)
+
+	if err != nil {
+		log.Panic("编码出错")
+	}
+
+	return buffer.Bytes()
+}
+
+func Deserialize(data []byte) Block {
+	decoder := gob.NewDecoder(bytes.NewReader(data))
+	var block Block
+	err := decoder.Decode(&block)
+	if err != nil {
+		log.Panic("解码出错")
+	}
+
+	return block
 }
 
 
